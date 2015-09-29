@@ -1,0 +1,59 @@
+inefficient.start.table <- function(start){
+  ten.large <- matrix(1,ncol = 10, nrow = 10)
+  ten.large[1,1] <- 0
+  ten.large[1,] <- 3
+  ten.large[,1] <- 3
+  ten.large[3:8,1] <- ten.large[3:8,1] + 1
+  ten.large[4:7,1] <- ten.large[4:7,1] + 1
+  ten.large[4:7,4:7] <- 8
+  ten.large[4:7,3] <- 7
+  ten.large[4:7,2] <- 5
+  ten.large[4:7,8] <- 7
+  ten.large[4:7,9] <- 5
+  ten.large[4:7,10] <- ten.large[4:7,1]
+  ten.large[c(2,3,8,9),2] <- c(3,4,4,3)
+  ten.large[10,] <- 3
+  ten.large[1,] <- ten.large[,1]
+  ten.large[10,] <- ten.large[,1]
+  ten.large[,10] <- ten.large[,1]
+  ten.large[2,4:7] <- 5
+  ten.large[3,4:7] <- 7
+  ten.large[8,4:7] <- 7
+  ten.large[9,4:7] <- 5
+  ten.large[2,] <- ten.large[,2]
+  ten.large[9,] <- ten.large[,2]
+  ten.large[,9] <- ten.large[,2]
+  ten.large[3,3] <- 6
+  ten.large[3,8] <- 6
+  ten.large[8,3] <- 6
+  ten.large[8,8] <- 6
+  ten.large
+}
+
+
+ten.large.solver <- function(starting.position) {
+  ten.large <- inefficient.start.table()
+  starting.position.index <- matrix(starting.position,ncol = 2)
+  ten.large[starting.position.index] <- 10
+  while (any(ten.large < 10)) {
+    current.index <- arrayInd(which.max(ten.large),.dim = c(10,10))
+    N <- current.index + c(-3,0)
+    NE <- current.index + c(-2,2)
+    E <- current.index + c(0,3)
+    SE <- current.index + c(2,2)
+    S <- current.index + c(3,0)
+    SW <- current.index + c(2,-2)
+    W <- current.index + c(0,-3)
+    NW <- current.index + c(-2,-2)
+    directions <- matrix(c(N,NE,E,SE,S,SW,W,NW),nrow = 2,ncol = 8)
+    directions[!apply(directions,2, function(x) x <= 10 & x > 0)] <- NA
+    current.values <- sapply(1:8, function(x) ten.large[directions[1,x],directions[2,x]])
+    minus.index <- t(directions[,(10 > current.values & current.values > 0 )])
+    next.index <- minus.index[which.min(sapply(1:dim(minus.index)[1],function(x) ten.large[minus.index[x,,drop = F]])),,drop = F]
+    for (index in 1:dim(minus.index)[1]){
+      ten.large[minus.index[index,,drop = F]] <- ten.large[minus.index[index,,drop = F]] - 1
+    }
+    ten.large[next.index] <- max(ten.large) + 1
+  }
+  ten.large
+}
